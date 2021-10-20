@@ -14,7 +14,11 @@ Tornado.cash-relevant data in much smaller, less-expensive-to-query tables.
 
 Costs end up under the 1TB-query-per-month, 10GB-storage-per-month free tier limits.
 
-## How to recreate the privacyexplorer.tornado_transactions dataset
+## How to recreate the tornado_transactions dataset
+
+Download, install, and configure the bq command-line tool from Google.
+
+Create a tornado_transactions dataset.
 
 On the command line, using the bq tool, create the tornadocontracts, traces, and transactions tables:
 
@@ -26,13 +30,13 @@ bq mk --schema ./transactions_schema.json tornado_transactions.transactions
 
 Copy the Tornado.cash-relevant rows from the public dataset into your traces and transactions tables with:
 ```
-INSERT `privacyexplorer.tornado_transactions.traces` SELECT * FROM `bigquery-public-data.crypto_ethereum.traces`
-  WHERE (`from_address` IN ( SELECT `address` FROM `privacyexplorer.tornado_transactions.tornadocontracts` )
-   OR  `to_address` IN ( SELECT `address` FROM `privacyexplorer.tornado_transactions.tornadocontracts` ))
+INSERT `tornado_transactions.traces` SELECT * FROM `bigquery-public-data.crypto_ethereum.traces`
+  WHERE (`from_address` IN ( SELECT `address` FROM `tornado_transactions.tornadocontracts` )
+   OR  `to_address` IN ( SELECT `address` FROM `tornado_transactions.tornadocontracts` ))
   AND SUBSTR(`input`, 1, 10) IN ("0xb214faa5", "0x21a0adb6");
 
-INSERT `privacyexplorer.tornado_transactions.transactions` SELECT * FROM `bigquery-public-data.crypto_ethereum.transactions`
- WHERE `hash` IN ( SELECT `transaction_hash` FROM `privacyexplorer.tornado_transactions.traces` );
+INSERT `tornado_transactions.transactions` SELECT * FROM `bigquery-public-data.crypto_ethereum.transactions`
+ WHERE `hash` IN ( SELECT `transaction_hash` FROM `tornado_transactions.traces` );
 ```
 
 Use the queries in DailyUpdate.sql to update those tables with the latest transactions (either run
