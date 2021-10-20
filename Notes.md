@@ -16,10 +16,25 @@ Costs end up under the 1TB-query-per-month, 10GB-storage-per-month free tier lim
 
 ## How to recreate the privacyexplorer.tornado_transactions dataset
 
-TODO... flesh this out:
-Schema files for transactions/traces/tornadocontracts tables
-Data for tornadocontracts
-Initial data for transactions/traces by running DailyUpdate queries without the date/block restrictions
-User-defined-function definitions
-View definitions
-Scheduling DailyUpdate query (see BigQuery documentation)
+On the command line, using the bq tool, create the tornadocontracts, traces, and transactions tables:
+
+```
+bq load tornado_transactions.tornadocontracts ./tornadocontracts.csv ./tornadocontracts_schema.json
+bq mk --schema ./traces_schema.json tornado_transactions.traces
+bq mk --schema ./transactions_schema.json tornado_transactions.transactions
+```
+
+Copy the Tornado.cash-relevant rows from the public dataset into your traces and transactions tables with:
+```
+INSERT `privacyexplorer.tornado_transactions.traces` SELECT * FROM `bigquery-public-data.crypto_ethereum.traces`
+  WHERE (`from_address` IN ( SELECT `address` FROM `privacyexplorer.tornado_transactions.tornadocontracts` )
+   OR  `to_address` IN ( SELECT `address` FROM `privacyexplorer.tornado_transactions.tornadocontracts` ))
+  AND SUBSTR(`input`, 1, 10) IN ("0xb214faa5", "0x21a0adb6");
+
+INSERT `privacyexplorer.tornado_transactions.transactions` SELECT * FROM `bigquery-public-data.crypto_ethereum.transactions`
+ WHERE `hash` IN ( SELECT `transaction_hash` FROM `privacyexplorer.tornado_transactions.traces` );
+```
+
+Use the queries in DailyUpdate.sql to update those tables with the latest transactions (either run
+manually or schedule it to run daily).
+
