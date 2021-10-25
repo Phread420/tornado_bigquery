@@ -1,4 +1,4 @@
-# Why I did what I did: or, what worked and didn't work as I was doing this stuff
+# Lessons Learned
 
 ## Why not look at Deposit and Withdraw events in the logs table?
 
@@ -41,4 +41,11 @@ INSERT `tornado_transactions.transactions` SELECT * FROM `bigquery-public-data.c
 
 Use the queries in DailyUpdate.sql to update those tables with the latest transactions (either run
 manually or schedule it to run daily).
+
+## What about other chains?
+I suspect some people are using Tornado with the same address on multiple chains-- e.g. depositing 10ETH on the ethereum chain, and 1000MATIC on the polygon chain from address A, then withdrawing to address B on both chains.
+
+There's a public BigQuery dataset [for the polygon chain](https://blog.polygon.technology/polygon-blockchain-datasets-are-now-available-on-google-bigquery-67e91a32aaee/).
+
+Annoyingly, it currently uses a very slightly different table schema than the crypto_ethereum dataset (I filed [two](https://github.com/blockchain-etl/polygon-etl/issues/44) [issues](https://github.com/blockchain-etl/polygon-etl/issues/45)).
 
